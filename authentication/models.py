@@ -20,15 +20,9 @@ class User(AbstractBaseUser,PermissionsMixin):
     REQUIRED_FIELDS=['first_name','last_name','username']
 
     def __str__(self) -> str:
-        return f"{self.first_name} {self.last_name}"
+        return f"{self.username}"
     
 
-class Profile(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE,related_name='profile', primary_key=True)
-    image=models.ImageField(upload_to='profile_image/',blank=True,null=True)
-    phone=models.CharField(max_length=20, blank=True,null=True)
-    bio=models.CharField(max_length=150, blank=True,null=True)
-    location = models.CharField(max_length=255, blank=True)
 
 
 

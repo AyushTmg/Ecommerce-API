@@ -1,7 +1,6 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin 
-from .models import User,Profile
-
+from .models import User
 
 @admin.register(User)
 class CustomUserAdmin(UserAdmin):
@@ -24,6 +23,3 @@ class CustomUserAdmin(UserAdmin):
     search_fields = ("email",)
     ordering = ("email",)
 
-@admin.register(Profile)
-class UserProfileAdmin(admin.ModelAdmin):
-    list_display=['pk','user','bio']

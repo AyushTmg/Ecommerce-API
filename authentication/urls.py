@@ -8,7 +8,6 @@ from .views import (
     UserChangePasswordView,
     SendResetPasswordEmailView,
     PassswordResetView,
-    UserProfileView 
     )
 
 
@@ -22,6 +21,5 @@ urlpatterns = [
     path('change-password/',UserChangePasswordView.as_view(),name="user-change-password"),
     path('send-reset-password-email/',SendResetPasswordEmailView.as_view(),name="send-reset-password-email"),
     path('reset-password/<str:uid>/<str:token>/',PassswordResetView.as_view(),name="user-password-reset"),
-    path('profile/',UserProfileView.as_view(),name='user-profile'),
     
 ]

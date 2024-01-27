@@ -10,7 +10,7 @@ from rest_framework import serializers
 
 
 from .tasks import activation_email_task, password_reset_task
-from .models import ( User ,Profile ) 
+from .models import ( User  ) 
 
 
 class UserRegistrationSerializer(serializers.ModelSerializer):
@@ -160,11 +160,7 @@ class PasswordResetSerializer(serializers.Serializer):
         user.save()
         return attrs
 
-class UserProfileSerializer(serializers.ModelSerializer):
-    user=serializers.StringRelatedField()
-    class Meta:
-        model=Profile 
-        fields=['user','bio','phone','location']
+
     
 
 
