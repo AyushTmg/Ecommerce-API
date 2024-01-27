@@ -28,6 +28,8 @@ def get_tokens_for_user(user):
         'access': str(refresh.access_token),
     }
 
+
+# ! View For User Registration 
 class UserRegistrationView(APIView):
     serializer_class=UserRegistrationSerializer
     permission_classes=[AllowAny]
@@ -38,6 +40,7 @@ class UserRegistrationView(APIView):
         serializer.save()
         return Response(_("Registered successfully,Activation link has been sent to your email"),status=HTTP_201_CREATED)
 
+# ! View For User Activation
 class UserActivationView(APIView):
     serializer_class=UserActivationSerializer
 
@@ -48,6 +51,7 @@ class UserActivationView(APIView):
         serializer.is_valid(raise_exception=True)
         return Response(_("Your account has been successfully activated"),status=HTTP_200_OK)
     
+# ! View For User Login
 class UserLoginView(APIView):
     serializer_class=UserLoginSerializer
 
@@ -64,6 +68,7 @@ class UserLoginView(APIView):
         else:
             return Response(_("Invalid Credential provided"),status=HTTP_401_UNAUTHORIZED)
             
+# ! View For Changing Password
 class UserChangePasswordView(APIView):
     serializer_class=UserChangePasswordSerializer
     permission_classes=[IsAuthenticated]
@@ -74,6 +79,7 @@ class UserChangePasswordView(APIView):
         serializer.is_valid(raise_exception=True)
         return Response({"message":"Password changed successfully successfully"},status=HTTP_200_OK)
 
+# ! View For Sending Password Reset  Link
 class SendResetPasswordEmailView(APIView):
     serializer_class=SendResetPasswordEmailSerializer
     permission_classes=[AllowAny]
@@ -83,6 +89,7 @@ class SendResetPasswordEmailView(APIView):
         serializer.is_valid(raise_exception=True)
         return Response(_("Reset Password Email has been sent to the email"),status=HTTP_200_OK)
     
+# !View For Resetting Password
 class PassswordResetView(APIView):
     serializer_class=PasswordResetSerializer
 

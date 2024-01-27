@@ -5,6 +5,9 @@ from django.conf import settings
 class Util:
   @staticmethod
   def send_activation_email(data):
+    """
+    For Sending Account Activation Email
+    """
     try:
         user_email = data['to_email']
         subject = 'Account Activation Email'
@@ -20,6 +23,9 @@ class Util:
 
   @staticmethod
   def send_password_reset_email(data):
+    """
+    For Sending Password Reset Email
+    """
     try:
         user_email = data['to_email']
         subject = 'Password Reset Email'
