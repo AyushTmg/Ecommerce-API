@@ -28,12 +28,10 @@ class Product(models.Model):
        return self.title
 
     
-
 # !Product Image Model
 class ProductImage(models.Model):
     image=models.ImageField(upload_to='product/image')
     product=models.ForeignKey(Product,on_delete=models.CASCADE,related_name='product_image')
-
 
 
 # !Product Review Model
@@ -42,7 +40,6 @@ class Review(models.Model):
     product=models.ForeignKey(Product,on_delete=models.CASCADE,related_name='review')
     user=models.ForeignKey(settings.AUTH_USER_MODEL,on_delete=models.CASCADE,related_name='review')
     time_stamp=models.DateTimeField(auto_now_add=True)
-
 
 
 # !Review Reply Model
@@ -63,14 +60,13 @@ class Order(models.Model):
         (COMPLETE,"Complete"),
         (FAILED,"Failed")
     ]
-    time_stamp=models.DateTimeField(auto_now_add=True)
+    time_stamp=models.DateTimeField(auto_now=True)
     payment_status=models.CharField(max_length=1,choices=PAYMENT_STATUS,default=PENDING)
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE,related_name='order')
 
 
     def __str__(self) -> str:
         return f"{self.user} - {self.payment_status}"
-
 
 
 # !OrderItem Model
@@ -80,7 +76,7 @@ class OrderItem(models.Model):
         )
     order=models.ForeignKey(Order,on_delete=models.CASCADE,related_name='order_item')
     product=models.ForeignKey(Product,on_delete=models.CASCADE,related_name='order_item')
-
+    time_stamp=models.DateTimeField(auto_now_add=True)
 
 
 # !Cart Model
@@ -101,7 +97,8 @@ class CartItem(models.Model):
     product=models.OneToOneField(Product,on_delete=models.CASCADE,related_name='cart_item')
 
 
-
+    class Meta:
+        unique_together = [['cart', 'product']]
 
 
 
