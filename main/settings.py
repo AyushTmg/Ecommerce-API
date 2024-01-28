@@ -32,6 +32,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+
 ]
 
 INSTALLED_APPS+=PROJECT_APPS
@@ -79,13 +80,30 @@ WSGI_APPLICATION = 'main.wsgi.application'
 
 
 # !DEFAULT DATABASE CONFIGURATION'S 
+"""
+If You dont want to use postgres as your database 
+You can use this instead just uncomment this one 
+and comment or remove the one beneth it 
+"""
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.sqlite3',
+#         'NAME': BASE_DIR / 'db.sqlite3',
+#     }
+# }
+
+
+# !DATABASE CONFIGURATION'S FOR POSTGRE'S
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME':os.environ.get("DB_NAME"),
+        'USER': 'postgres', 
+        'PASSWORD':os.environ.get("DB_PASS"), 
+        'HOST': 'localhost', 
+
     }
 }
-
 
 
 AUTH_PASSWORD_VALIDATORS = [
