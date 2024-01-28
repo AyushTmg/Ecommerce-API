@@ -23,7 +23,7 @@ class ProductSerailizer(ModelSerializer):
             'id'
             ,'title'
             ,'description'
-            ,'unit_price'
+            ,'price'
             ,'is_available'
             ,'collection'
         ]

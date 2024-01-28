@@ -80,7 +80,7 @@ on the number of review or order of a product
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
     list_per_page=10
-    list_display=['id','title','unit_price','collection','is_available','total_order_item','total_review']
+    list_display=['id','title','price','collection','is_available','total_order_item','total_review']
     search_fields=['title__istartswith']
     autocomplete_fields=['user','collection']
     inlines=[ProductImageInline]

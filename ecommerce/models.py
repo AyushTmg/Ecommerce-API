@@ -16,7 +16,7 @@ class Collection(models.Model):
 class Product(models.Model):
     title = models.CharField(max_length=200)
     description = models.TextField()
-    unit_price=models.PositiveIntegerField(
+    price=models.PositiveIntegerField(
         validators=[MinValueValidator(1)]
         )
     is_available=models.BooleanField(default=True)
