@@ -1,12 +1,18 @@
 
 from .models import (
     Collection,
-    Product
+    Product,
+    ProductImage,
+    Review,
+    Reply
 )
 
 from .serializers import (
     CollectionSerializer,
-    ProductSerailizer
+    ProductSerailizer,
+    ProductImageSerializer,
+    ReviewSerailizer,
+    ReplySerializer
 )
 
 
@@ -19,6 +25,7 @@ from rest_framework.response import Response
 class CollectionViewSet(ModelViewSet):
     queryset = Collection.objects.all()
     serializer_class = CollectionSerializer
+    http_method_names=['get','head','options','post','delete']
     
 
     def retrieve(self, request, *args, **kwargs):
@@ -39,10 +46,19 @@ class CollectionViewSet(ModelViewSet):
 
         return Response(data)
 
+
+
+
 # !Product ViewSet
 class ProductViewSet(ModelViewSet):
-    queryset=Product.objects.all().select_related('collection')
+    queryset=(
+        Product.objects.all()
+        .select_related('collection')
+        .prefetch_related('product_image')
+    )
     serializer_class=ProductSerailizer
+    http_method_names=['get','head','options','post','delete','patch']
+
 
     def get_serializer_context(self):
         """ 
@@ -63,7 +79,11 @@ class ProductViewSet(ModelViewSet):
         instance = self.get_object()
         serializer = self.serializer_class(instance)
         
-        similar_products = Product.objects.exclude(id=instance.id).filter(collection=instance.collection)
+        similar_products = (
+            Product.objects
+            .exclude(id=instance.id)
+            .filter(collection=instance.collection)
+        )
         related_serializer = self.serializer_class(similar_products, many=True)
 
         data = {
@@ -74,7 +94,117 @@ class ProductViewSet(ModelViewSet):
         return Response(data)
 
 
-    
+
+
+# !ProductImage ViewSet
+class ProductImageViewSet(ModelViewSet):
+    serializer_class=  ProductImageSerializer
+    http_method_names=['get','head','options','post']
+
+
+
+    def get_queryset(self):
+        """ 
+        Over Riding the queryset for filter 
+        the product images by the product id 
+        present in the URL  parameter
+        """
+        product_id=self.kwargs['product_pk']
+        return ProductImage.objects.filter(product_id=product_id)
+
+
+    def get_serializer_context(self):
+        """
+        Passing the product_id as serializer context
+        for creating product image instance
+        """
+        product_id=self.kwargs['product_pk']
+        return {'product_id':product_id}
     
 
 
+
+# ! Review ViewSet
+class ReviewViewSet(ModelViewSet):
+    serializer_class=ReviewSerailizer
+    http_method_names=['get','head','options','post','delete']
+
+
+
+    def get_queryset(self):
+        """ 
+        Over Riding the queryset for filtering 
+        the review's by the product id 
+        present in the URL  parameter
+        """
+        product_id=self.kwargs['product_pk']
+
+        return (
+            Review.objects
+            .filter(product_id=product_id)
+            .select_related('user')
+        )
+    
+    
+
+    def get_serializer_context(self):
+        """
+        Passing the product_id and user_id as 
+        serializer context for creating product
+        review instance
+        """
+
+        product_id=self.kwargs['product_pk']
+        user_id=self.request.user.id
+
+        return {
+            'product_id':product_id,
+            'user_id':user_id
+            }
+
+
+
+
+#! Reply ViewSet
+class ReplyViewSet(ModelViewSet):
+    serializer_class=ReplySerializer
+    http_method_names=['get','head','options','post','delete']
+
+
+    def get_queryset(self):
+        """ 
+        Over Riding the queryset for filtering 
+        the review reply's by the review id 
+        present in the URL  parameter
+        """
+        review_id=self.kwargs['review_pk']
+
+        return (
+            Reply.objects
+            .filter(review_id=review_id)
+            .select_related('user')
+        )
+    
+    
+    def get_serializer_context(self):
+        """
+        Passing the review_id and user_id as 
+        serializer context for creating product
+        reply instance
+        """
+
+        review_id=self.kwargs['review_pk']
+        user_id=self.request.user.id
+
+        return {
+            'review_id':review_id,
+            'user_id':user_id
+        }
+    
+
+
+
+    
+     
+    
+    
