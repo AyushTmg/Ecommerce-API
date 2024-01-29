@@ -14,11 +14,17 @@ from .serializers import (
     ReviewSerailizer,
     ReplySerializer
 )
+from .filters import ProductFilter
 
 
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.generics import ListCreateAPIView
+from rest_framework.filters import OrderingFilter,SearchFilter
+
+
+from django_filters.rest_framework import DjangoFilterBackend
+
 
 
 
@@ -27,6 +33,7 @@ class CollectionViewSet(ModelViewSet):
     queryset = Collection.objects.all()
     serializer_class = CollectionSerializer
     http_method_names=['get','head','options','post','delete']
+    
     
 
     def retrieve(self, request, *args, **kwargs):
@@ -60,6 +67,19 @@ class ProductViewSet(ModelViewSet):
     )
     serializer_class=ProductSerailizer
     http_method_names=['get','head','options','post','delete','patch']
+   
+    #* For Searching,Filtering and Ordering products
+    filter_backends=[
+        SearchFilter,
+        DjangoFilterBackend,
+        OrderingFilter
+    ]
+    # * For Using the Custom filter for Product
+    filterset_class=ProductFilter
+
+    #* For Specifying the fields for searching and ordering
+    search_fields=['title','description']
+    ordering_fields=['price']
 
 
     def get_serializer_context(self):
@@ -132,6 +152,11 @@ class ReviewViewSet(ModelViewSet):
     serializer_class=ReviewSerailizer
     http_method_names=['get','head','options','post','delete']
 
+    #* For Ordering reviews   
+    filter_backends=[OrderingFilter]
+
+    #* For Specifying the fields for ordering
+    ordering_fields=['time_stamp']
 
 
     def get_queryset(self):
@@ -147,7 +172,6 @@ class ReviewViewSet(ModelViewSet):
             .filter(product_id=product_id)
             .select_related('user')
         )
-    
     
 
     def get_serializer_context(self):
@@ -171,6 +195,12 @@ class ReviewViewSet(ModelViewSet):
 # ! Reply View 
 class ReplyListCreateView(ListCreateAPIView):
     serializer_class=ReplySerializer
+
+    #* For Ordering reviews reply 
+    filter_backends=[OrderingFilter]
+
+    #* For Specifying the fields for ordering
+    ordering_fields=['time_stamp']
 
 
     def get_queryset(self):
