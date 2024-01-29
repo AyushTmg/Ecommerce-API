@@ -15,6 +15,7 @@ from .serializers import (
     ReplySerializer
 )
 from .filters import ProductFilter
+from .pagination import Default
 
 
 from rest_framework.response import Response
@@ -28,11 +29,14 @@ from django_filters.rest_framework import DjangoFilterBackend
 
 
 
+
+
 # !Collection ViewSet
 class CollectionViewSet(ModelViewSet):
     queryset = Collection.objects.all()
     serializer_class = CollectionSerializer
     http_method_names=['get','head','options','post','delete']
+    pagination_class=Default
     
     
 
@@ -67,6 +71,8 @@ class ProductViewSet(ModelViewSet):
     )
     serializer_class=ProductSerailizer
     http_method_names=['get','head','options','post','delete','patch']
+    pagination_class=Default
+
    
     #* For Searching,Filtering and Ordering products
     filter_backends=[
@@ -126,6 +132,7 @@ class ProductImageViewSet(ModelViewSet):
 
 
 
+
     def get_queryset(self):
         """ 
         Over Riding the queryset for filter 
@@ -151,6 +158,8 @@ class ProductImageViewSet(ModelViewSet):
 class ReviewViewSet(ModelViewSet):
     serializer_class=ReviewSerailizer
     http_method_names=['get','head','options','post','delete']
+    pagination_class=Default
+
 
     #* For Ordering reviews   
     filter_backends=[OrderingFilter]
