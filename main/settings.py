@@ -19,9 +19,10 @@ PROJECT_APPS=[
 
 # !THIRD PARTY APP'S 
 THIRD_PARTY_APPS=[
+    "debug_toolbar",
     'rest_framework',
     'rest_framework_simplejwt',
-    "debug_toolbar",
+    'django_filters',
 ]
 
 # !INSTALLED APP'S
