@@ -12,11 +12,15 @@ from rest_framework import serializers
 from rest_framework.serializers import ModelSerializer
 
 
+
+
 # !Collection Serializer
 class CollectionSerializer(ModelSerializer):
     class Meta:
         model=Collection
         fields=['id','title']
+
+
 
 
 # !Product Image Serializer
@@ -39,6 +43,8 @@ class ProductImageSerializer(ModelSerializer):
                 **validated_data
                 )
             )
+
+
 
 
 # !Product Serializer
@@ -73,6 +79,8 @@ class ProductSerailizer(ModelSerializer):
         )
 
 
+
+
 # !  Review Seriailzer 
 class ReviewSerailizer(ModelSerializer):
     user=serializers.StringRelatedField(read_only=True)
@@ -100,11 +108,13 @@ class ReviewSerailizer(ModelSerializer):
             Review.objects.create(
                 user_id=user_id,
                 product_id=product_id,
-                **validated_data
                 )
             )
 
 
+
+
+# !Reply Serializer
 class ReplySerializer(ModelSerializer):
     user=serializers.StringRelatedField(read_only=True)
 

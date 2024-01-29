@@ -16,8 +16,9 @@ from .serializers import (
 )
 
 
-from rest_framework.viewsets import ModelViewSet
 from rest_framework.response import Response
+from rest_framework.viewsets import ModelViewSet
+from rest_framework.generics import ListCreateAPIView
 
 
 
@@ -33,6 +34,7 @@ class CollectionViewSet(ModelViewSet):
         Overriding the default retrieve method to 
         filter the product by the collection
         """
+        
         instance=self.get_object()
         serializer=self.serializer_class(instance)
 
@@ -76,6 +78,7 @@ class ProductViewSet(ModelViewSet):
         for showing product detail with similar
         products listing
         """
+
         instance = self.get_object()
         serializer = self.serializer_class(instance)
         
@@ -162,13 +165,12 @@ class ReviewViewSet(ModelViewSet):
             'user_id':user_id
             }
 
+    
 
 
-
-#! Reply ViewSet
-class ReplyViewSet(ModelViewSet):
+# ! Reply View 
+class ReplyListCreateView(ListCreateAPIView):
     serializer_class=ReplySerializer
-    http_method_names=['get','head','options','post','delete']
 
 
     def get_queryset(self):
@@ -185,7 +187,7 @@ class ReplyViewSet(ModelViewSet):
             .select_related('user')
         )
     
-    
+
     def get_serializer_context(self):
         """
         Passing the review_id and user_id as 
@@ -202,8 +204,29 @@ class ReplyViewSet(ModelViewSet):
         }
     
 
+    def list(self, request, *args, **kwargs):
+        """
+        Over Riding the list  method to add
+        corresponding review to it's replies
+        """
 
+        queryset = self.filter_queryset(self.get_queryset())
+        page = self.paginate_queryset(queryset)
 
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+        
+        review=Review.objects.get(id=self.kwargs['review_pk'])
+        review_serailizer=ReviewSerailizer(review)
+        serializer = self.get_serializer(queryset, many=True)
+
+        data={
+            'review':review_serailizer.data,
+            'replies':serializer.data
+        }
+
+        return Response(data)
     
      
     
