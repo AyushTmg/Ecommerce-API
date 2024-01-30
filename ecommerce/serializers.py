@@ -3,7 +3,9 @@ from .models import (
     Product,
     ProductImage,
     Review,
-    Reply
+    Reply,
+    Cart,
+    CartItem
 )
 
 
@@ -50,6 +52,7 @@ class ProductImageSerializer(ModelSerializer):
 # !Product Serializer
 class ProductSerailizer(ModelSerializer):
     product_image=ProductImageSerializer(many=True,read_only=True)
+    is_available=serializers.BooleanField(default=True,read_only=True)
 
     class Meta:
         model=Product
@@ -62,6 +65,7 @@ class ProductSerailizer(ModelSerializer):
             ,'collection',
             'product_image'
         ]
+
 
     def create(self, validated_data):
         """ 
@@ -92,6 +96,7 @@ class ReviewSerailizer(ModelSerializer):
             'description',
             'time_stamp'
         ]
+
 
     def create(self, validated_data):
         """ 
@@ -146,3 +151,67 @@ class ReplySerializer(ModelSerializer):
                 ,**validated_data
                 )
             )
+
+
+
+
+# !Simple Product
+class SimpleProductSerializer(ModelSerializer):
+    product_image=ProductImageSerializer(many=True)
+
+
+    class Meta:
+        model=Product
+        fields=[
+            'id',
+            'title',
+            'price',
+            'product_image'
+        ]
+
+
+
+
+# ! Cart Item Serializer
+class CartItemSerializer(ModelSerializer):
+    product=SimpleProductSerializer()
+
+    # * Custom field for finding total price of an item in cart
+    total_product_price=(
+        serializers.SerializerMethodField(
+            method_name='get_product_price'
+            )
+        )
+
+
+    def get_product_price(self,cart_item):
+        """
+        Custom Method for calculating cart item total
+        price based on quantity and price of the product
+        """
+        return  cart_item.product.price * cart_item.quantity
+    
+
+    class Meta:
+        model=CartItem
+        fields=[
+            'id',
+            'product',
+            'quantity',
+            'total_product_price'
+        ]
+
+
+
+# !Cart Serializer 
+class CartSerializer(ModelSerializer):
+    class Meta:
+        model=Cart 
+        fields=[
+            'id',
+            'user',
+            'time_stamp',
+
+        ]
+
+

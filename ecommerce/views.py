@@ -4,7 +4,9 @@ from .models import (
     Product,
     ProductImage,
     Review,
-    Reply
+    Reply,
+    Cart,
+    CartItem
 )
 
 from .serializers import (
@@ -12,7 +14,9 @@ from .serializers import (
     ProductSerailizer,
     ProductImageSerializer,
     ReviewSerailizer,
-    ReplySerializer
+    ReplySerializer,
+    CartSerializer,
+    CartItemSerializer,
 )
 from .filters import ProductFilter
 from .pagination import Default
@@ -267,6 +271,29 @@ class ReplyListCreateView(ListCreateAPIView):
 
         return Response(data)
     
+
+
+
+# ! Cart ViewSet
+class CartViewSet(ModelViewSet):
+    queryset=Cart.objects.all()
+    serializer_class=CartSerializer
+
+
+
+
+# ! Cart Item Serializer 
+class CartItemViewSet(ModelViewSet):
+    queryset=(
+        CartItem.objects.all()
+        .select_related('product')
+        .prefetch_related('product__product_image')
+    )
+
+    serializer_class=CartItemSerializer
+    
+
+
      
     
     
