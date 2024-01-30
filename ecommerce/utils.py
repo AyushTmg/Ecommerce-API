@@ -24,6 +24,7 @@ User=get_user_model()
 fake=Faker()
 
 
+# !Function for generating dummy user
 def generate_dummy_user(num):
     """
     Generate a specified number of dummy users for
@@ -38,6 +39,9 @@ def generate_dummy_user(num):
             password=fake.password(),
         )
 
+
+
+# !Function for generating dummy collection
 def generate_dummy_collection(num):
     """
     generates dummy collections for testing purpose.
@@ -48,6 +52,8 @@ def generate_dummy_collection(num):
         )
 
 
+
+# !Function for generating dummy product
 def generate_dummy_product(num):
     """
     generates dummy product and realated collection 
@@ -66,6 +72,8 @@ def generate_dummy_product(num):
         )
 
 
+
+# !Function for generating dummy review
 def generate_dummy_review(num):
     """
     Generate a number of reviews related to existing
@@ -82,6 +90,9 @@ def generate_dummy_review(num):
             time_stamp=fake.date_time_this_decade(),
         )
 
+
+
+# !Function for generating dummy review reply
 def generate_dummy_reply(num):
     """
     Adds replies to random reviews for testing purpose.
@@ -99,10 +110,62 @@ def generate_dummy_reply(num):
 
 
 
+
+# !Function for generating dummy Cart and cart Item record
+def generate_dummy_cart(num):
+    """
+    Create dummy cart and cart item for
+    testing purposes
+    """
+    for i in range(num):
+        user_id=random.randint(1, 100) 
+        product_id = random.randint(1, 100) 
+
+        cart = Cart.objects.create(
+            user=User.objects.get(id=user_id),
+            time_stamp=fake.date_time_this_decade(),
+        )
+
+        CartItem.objects.create(
+            quantity=random.randint(1, 15),
+            cart=cart,
+            product_id=product_id,
+        )
+
+
+
+
+# !Function for generating dummy order record
+def generate_dummy_order(num):
+    """
+    Create dummy orders and order item for
+    testing purposes
+    """
+    for i in range(num):
+        user_id=random.randint(1, 100) 
+        product_id = random.randint(1, 100) 
+
+        order = Order.objects.create(
+            user=User.objects.get(id=user_id),
+            time_stamp=fake.date_time_this_decade(),
+            payment_status=random.choice([Order.PENDING, Order.COMPLETE, Order.FAILED]),
+        )
+
+        OrderItem.objects.create(
+            quantity=random.randint(1, 15),
+            order=order,
+            product_id=product_id,
+            time_stamp=fake.date_time_this_decade(),
+        )
+
+
+
 # About Other Models Dummy Data
 """
 Other data generations function will be added  at the 
 time of working with their API's
 """
+
+
 
 
