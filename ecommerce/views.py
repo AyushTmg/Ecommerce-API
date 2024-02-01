@@ -24,10 +24,12 @@ from .filters import ProductFilter
 from .pagination import Default
 
 
+from rest_framework import permissions
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.generics import ListCreateAPIView
 from rest_framework.filters import OrderingFilter,SearchFilter
+from rest_framework.permissions import  IsAuthenticated,IsAdminUser,AllowAny
 
 
 from django_filters.rest_framework import DjangoFilterBackend
@@ -42,10 +44,18 @@ class CollectionViewSet(ModelViewSet):
     queryset = Collection.objects.all()
     serializer_class = CollectionSerializer
     http_method_names=['get','head','options','post','delete']
-    pagination_class=Default
-    
-    
+    pagination_class=Default 
 
+
+    def get_permissions(self):
+        """
+        Permission for Collection ViewSet
+        """
+        if self.request.method in permissions.SAFE_METHODS:
+            return [AllowAny()]
+        return [IsAdminUser]
+        
+    
     def retrieve(self, request, *args, **kwargs):
         """ 
         Overriding the default retrieve method to 
@@ -94,6 +104,17 @@ class ProductViewSet(ModelViewSet):
     ordering_fields=['price']
 
 
+    def get_permissions(self):
+        """
+        Permission for Product ViewSet
+        """
+        if self.request.method in permissions.SAFE_METHODS:
+            return [AllowAny()]
+        return [IsAdminUser()]
+    
+
+    
+
     def get_serializer_context(self):
         """ 
         Passing the user_id as serializer context
@@ -118,6 +139,8 @@ class ProductViewSet(ModelViewSet):
             Product.objects
             .exclude(id=instance.id)
             .filter(collection=instance.collection)
+            .select_related('collection')
+            .prefetch_related('product_image')
         )
         related_serializer = self.serializer_class(similar_products, many=True)
 
@@ -136,8 +159,9 @@ class ProductImageViewSet(ModelViewSet):
     serializer_class=  ProductImageSerializer
     http_method_names=['get','head','options','post']
 
-
-
+    # ! Permission for Product Image ViewSet
+    permission_classes=[IsAuthenticated]
+    
 
     def get_queryset(self):
         """ 
@@ -172,6 +196,15 @@ class ReviewViewSet(ModelViewSet):
 
     #* For Specifying the fields for ordering
     ordering_fields=['time_stamp']
+
+
+    def get_permissions(self):
+        """
+        Permission for Review ViewSet
+        """
+        if self.request.method in permissions.SAFE_METHODS:
+            return [AllowAny()]
+        return [IsAdminUser]
 
 
     def get_queryset(self):
@@ -216,6 +249,15 @@ class ReplyListCreateView(ListCreateAPIView):
 
     #* For Specifying the fields for ordering
     ordering_fields=['time_stamp']
+
+
+    def get_permissions(self):
+        """
+        Permission for Review ViewSet
+        """
+        if self.request.method in permissions.SAFE_METHODS:
+            return [AllowAny()]
+        return [IsAdminUser]    
 
 
     def get_queryset(self):
@@ -288,12 +330,19 @@ class CartViewSet(ModelViewSet):
         )
     serializer_class=CartSerializer
 
+    # ! Permissions for Cart ViewSet
+    permission_classes=[IsAuthenticated]
 
+    
 
 
 # ! Cart Item Serializer 
 class CartItemViewSet(ModelViewSet):
     http_method_names=['get','head','options','post','delete','put']
+
+    # ! Permissions For CartItem ViewSet
+    permission_classes=[IsAuthenticated]
+
 
     def get_queryset(self):
         """
