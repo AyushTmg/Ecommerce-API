@@ -6,7 +6,9 @@ from .models import (
     Review,
     Reply,
     Cart,
-    CartItem
+    CartItem,
+    Order,
+    OrderItem
 )
 
 from .serializers import (
@@ -18,7 +20,10 @@ from .serializers import (
     CartSerializer,
     CartItemSerializer,
     AddCartItemSerializer,
-    UpdateCartItemSerializer
+    UpdateCartItemSerializer,
+    OrderSerializer,
+    CreateOrderSerailzer,
+    UpdateOrderSerializer
 )
 from .filters import ProductFilter
 from .pagination import Default
@@ -243,7 +248,7 @@ class ReviewViewSet(ModelViewSet):
 # ! Reply View 
 class ReplyListCreateView(ListCreateAPIView):
     serializer_class=ReplySerializer
-
+    pagination_class=Default
     #* For Ordering reviews reply 
     filter_backends=[OrderingFilter]
 
@@ -339,7 +344,7 @@ class CartViewSet(ModelViewSet):
 # ! Cart Item Serializer 
 class CartItemViewSet(ModelViewSet):
     http_method_names=['get','head','options','post','delete','put']
-
+    pagination_class=Default
     # ! Permissions For CartItem ViewSet
     permission_classes=[IsAuthenticated]
 
@@ -382,6 +387,60 @@ class CartItemViewSet(ModelViewSet):
         cart_id=self.kwargs['cart_pk']
         return {'cart_id':cart_id}
     
+
+
+
+# ! Order ViewSet
+class OrderViewSet(ModelViewSet):
+    permission_classes=[IsAuthenticated]
+    pagination_class=Default
+    
+    def get_queryset(self):
+        """
+        if request.user is admin or staff user then show
+        all orders else only show the order of only those 
+        order which belongs to the user
+        """
+        if (self.request.user.is_staff or self.request.user.is_superuser):
+            return (
+                Order.objects.all()
+                .select_related('user')
+                .prefetch_related(
+                    'order_item',
+                    'order_item__product',
+                    'order_item__product__product_image'
+                    )
+            )
+        
+        return (
+            Order.objects.filter(user=self.request.user)
+            .select_related('user')
+            .prefetch_related(
+                'order_item',
+                'order_item__product',
+                'order_item__product__product_image'
+                )
+            )
+        
+    
+    def get_serializer_class(self):
+        if self.request.method =='POST':
+            return CreateOrderSerailzer
+        elif self.request.method =='PUT':
+            return UpdateOrderSerializer
+        return OrderSerializer
+    
+    
+    def get_serializer_context(self):
+        """
+        Passing user_id to serailizer
+        """
+        user_id=self.request.user.id
+        return {'user_id':user_id}
+    
+
+
+
 
 
      

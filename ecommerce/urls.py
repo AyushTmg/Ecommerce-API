@@ -5,7 +5,8 @@ from .views import (
     ReviewViewSet,
     ReplyListCreateView,
     CartViewSet,
-    CartItemViewSet
+    CartItemViewSet,
+    OrderViewSet
 )
 
 from django.urls import path 
@@ -17,6 +18,7 @@ router=routers.DefaultRouter()
 router.register('collections',CollectionViewSet)
 router.register('products',ProductViewSet)
 router.register('cart',CartViewSet)
+router.register('order',OrderViewSet,basename='order')
 
 product_router=routers.NestedDefaultRouter(router,'products',lookup='product')
 product_router.register('images',ProductImageViewSet,basename='product_image')
