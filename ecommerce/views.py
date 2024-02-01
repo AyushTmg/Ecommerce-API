@@ -17,6 +17,8 @@ from .serializers import (
     ReplySerializer,
     CartSerializer,
     CartItemSerializer,
+    AddCartItemSerializer,
+    UpdateCartItemSerializer
 )
 from .filters import ProductFilter
 from .pagination import Default
@@ -276,7 +278,14 @@ class ReplyListCreateView(ListCreateAPIView):
 
 # ! Cart ViewSet
 class CartViewSet(ModelViewSet):
-    queryset=Cart.objects.all()
+    queryset=(
+        Cart.objects.all()
+        .prefetch_related(
+            'cart_item',
+            'cart_item__product',
+            'cart_item__product__product_image'
+            )
+        )
     serializer_class=CartSerializer
 
 
@@ -284,13 +293,45 @@ class CartViewSet(ModelViewSet):
 
 # ! Cart Item Serializer 
 class CartItemViewSet(ModelViewSet):
-    queryset=(
-        CartItem.objects.all()
-        .select_related('product')
-        .prefetch_related('product__product_image')
-    )
+    http_method_names=['get','head','options','post','delete','put']
 
-    serializer_class=CartItemSerializer
+    def get_queryset(self):
+        """
+        Over Riding the queryset for filtering the cart
+        item by cart_id presented at URL parameter and 
+        also using select_related and prefetch_related
+        for optimization
+        """
+        cart_id=self.kwargs['cart_pk']
+
+        return (
+            CartItem.objects
+            .filter(cart_id=cart_id)
+            .select_related('product')
+            .prefetch_related('product__product_image')
+        )
+    
+
+    def get_serializer_class(self):
+        """
+        Over Rding the get_serializer class for using 
+        different serializer for different methods 
+        """
+        if self.request.method in ['GET','HEAD','OPTIONS']:
+            return CartItemSerializer
+        
+        elif self.request.method=='PUT':
+            return UpdateCartItemSerializer
+        
+        return AddCartItemSerializer
+    
+
+    def get_serializer_context(self):
+        """
+        Passing the cart Id to the serializer 
+        """
+        cart_id=self.kwargs['cart_pk']
+        return {'cart_id':cart_id}
     
 
 
