@@ -8,7 +8,6 @@ from .models import (
     Cart,
     CartItem,
     Order,
-    OrderItem
 )
 
 from .serializers import (
@@ -23,7 +22,7 @@ from .serializers import (
     UpdateCartItemSerializer,
     OrderSerializer,
     CreateOrderSerailzer,
-    UpdateOrderSerializer
+    UpdateOrderSerializer,
 )
 from .filters import ProductFilter
 from .pagination import Default
@@ -34,7 +33,7 @@ from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.generics import ListCreateAPIView
 from rest_framework.filters import OrderingFilter,SearchFilter
-from rest_framework.permissions import  IsAuthenticated,IsAdminUser,AllowAny
+from rest_framework.permissions import IsAuthenticated,IsAdminUser,AllowAny
 
 
 from django_filters.rest_framework import DjangoFilterBackend
@@ -429,20 +428,18 @@ class OrderViewSet(ModelViewSet):
         elif self.request.method =='PUT':
             return UpdateOrderSerializer
         return OrderSerializer
-    
-    
-    def get_serializer_context(self):
+
+
+    def create(self, request, *args, **kwargs):
         """
-        Passing user_id to serailizer
+        Over Riding the Create Method to display the 
+        Order and  Order Item in a Detailed Format
         """
-        user_id=self.request.user.id
-        return {'user_id':user_id}
-    
-
-
-
-
-
-     
-    
+        serializer = CreateOrderSerailzer(
+            data=request.data,
+            context={'user_id': self.request.user.id})
+        serializer.is_valid(raise_exception=True)
+        order = serializer.save()
+        serializer = OrderSerializer(order)
+        return Response(serializer.data)
     
