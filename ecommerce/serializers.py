@@ -359,7 +359,7 @@ class CreateOrderSerailzer(serializers.Serializer):
             # ! Create new order with the user_id
             order=Order.objects.create(user_id=user_id)
 
-            cart_items=CartItem.objects.filter(cart=cart).select_related('cart','product')
+            cart_items=CartItem.objects.filter(cart=cart)
             
             order_items=[
                 OrderItem(
@@ -369,10 +369,14 @@ class CreateOrderSerailzer(serializers.Serializer):
 
                 ) for item in cart_items
             ]
-
+            
+            # !Creating order items
             OrderItem.objects.bulk_create(order_items)
+
+            # ! Deleteing a cart after the order adn order item is created
             cart.delete()
 
+            #  ! Custome signal fired 
             order_created.send_robust(self.__class__,order=order)
             return order 
 

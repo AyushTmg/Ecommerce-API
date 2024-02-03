@@ -428,18 +428,16 @@ class OrderViewSet(ModelViewSet):
         elif self.request.method =='PUT':
             return UpdateOrderSerializer
         return OrderSerializer
+    
+    
+    def get_serializer_context(self):
+        """  
+        Method which pass user_id as context to
+        the serializer
+        """
+        user_id=self.request.user.id
+        return {'user_id':user_id}
 
 
-    def create(self, request, *args, **kwargs):
-        """
-        Over Riding the Create Method to display the 
-        Order and  Order Item in a Detailed Format
-        """
-        serializer = CreateOrderSerailzer(
-            data=request.data,
-            context={'user_id': self.request.user.id})
-        serializer.is_valid(raise_exception=True)
-        order = serializer.save()
-        serializer = OrderSerializer(order)
-        return Response(serializer.data)
+
     
