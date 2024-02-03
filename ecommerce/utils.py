@@ -13,7 +13,10 @@ class Util:
         user_email = data['to_email']
         subject = data['subject']
         user=data['user']
+
+        # ! For passing context in the template for email
         context={'user':user}
+
         message=render_to_string('emails/order_placed.html',context)
         send_mail(subject, '', settings.DEFAULT_FROM_EMAIL, [user_email],html_message=message)
 
@@ -30,7 +33,9 @@ class Util:
         user_email = data['to_email']
         subject = data['subject']
         user=data['user']
+        # ! For passing context in the template for email
         context={'user':user}
+        
         message=render_to_string('emails/order_received.html',context)
         send_mail(subject, '', settings.DEFAULT_FROM_EMAIL, [user_email],html_message=message)
 

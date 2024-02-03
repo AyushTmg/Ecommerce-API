@@ -11,7 +11,7 @@ def on_order(sender,**kwargs):
     """
     # ! This data is to inform the user that order has been placed  
     data_for_sending_mail_to_customer={
-          'user':kwargs['order'].user,
+          'user':str(kwargs['order'].user),
           'to_email':kwargs['order'].user.email,
           'subject':"Order Placed"
     }
@@ -20,8 +20,8 @@ def on_order(sender,**kwargs):
     # ! placed and is assumed that all the product are sold by a
     # ! single supplier and the supplier email should be used in this
     data_for_sending_mail_to_suppliser={
-        'user':kwargs['order'].user,
-        'to_email':"thesupplier@gmail.com",
+        'user':str(kwargs['order'].user),
+        'to_email':"ayushtmg20040722@gmail.com",
         'subject':"Order Received"
     }
 
@@ -30,4 +30,5 @@ def on_order(sender,**kwargs):
         data_for_sending_mail_to_customer,
         data_for_sending_mail_to_suppliser
     )
+
 
