@@ -15,6 +15,7 @@ ALLOWED_HOSTS = []
 PROJECT_APPS=[
     'ecommerce',
     'authentication',
+    'user_activity_logs',
 ]
 
 # !THIRD PARTY APP'S 
