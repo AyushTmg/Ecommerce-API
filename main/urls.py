@@ -10,8 +10,9 @@ from django.urls import path,include
 urlpatterns = [
     path('admin/', admin.site.urls),
     path("__debug__/", include("debug_toolbar.urls")),
-    path('api/',include('authentication.urls')),
-    path('api/e-commerce/',include('ecommerce.urls'))
+    path('api/auth/',include('authentication.urls')),
+    path('api/e-commerce/',include('ecommerce.urls')),
+    path('api/',include('user_activity_logs.urls')),
 ]
 
 
