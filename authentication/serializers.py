@@ -12,14 +12,32 @@ from rest_framework import serializers
 from .tasks import activation_email_task, password_reset_task
 from .models import ( User  ) 
 
+
 #! Serializer for User Registration 
 class UserRegistrationSerializer(serializers.ModelSerializer):
-    password=serializers.CharField(style={'input_type':'password'},write_only=True,validators=[validate_password])
-    password_confirmation=serializers.CharField(style={'input_type':'password'},write_only=True,validators=[validate_password])
+    password=serializers.CharField(
+        style={'input_type':'password'},
+        write_only=True,
+        validators=[validate_password]
+    )
+    password_confirmation=serializers.CharField(
+        style={'input_type':'password'},
+        write_only=True,
+        validators=[validate_password]
+    )
+
 
     class Meta:
         model=User 
-        fields=['first_name','last_name','username','email','password','password_confirmation']
+        fields=[
+            'first_name',
+            'last_name',
+            'username',
+            'email',
+            'password',
+            'password_confirmation'
+        ]
+
 
     def validate(self, attrs):
         """
@@ -34,7 +52,11 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         
         return attrs
     
+    
     def create(self,validated_data):
+        """
+        Over Riding the create method for user registration
+        """
         try:
             with transaction.atomic():
                 user=User.objects.create(
@@ -65,6 +87,9 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
             print(f"error --> {e}")
             raise serializers.ValidationError(_("Somme Error occoured during registration"))
     
+
+
+
 #! Serializer for User Account Activation
 class UserActivationSerializer(serializers.Serializer):
     def validate(self, attrs):
@@ -88,20 +113,44 @@ class UserActivationSerializer(serializers.Serializer):
         except Exception as e:
             raise serializers.ValidationError(_("Somme Error occoured during activation"))
 
+
+
+
+
 #! Serializer for User Login
 class UserLoginSerializer(serializers.ModelSerializer):
     email=serializers.EmailField()
-    password = serializers.CharField(write_only=True,required=True,style={'input_type':'password'})
+    password = serializers.CharField(
+        write_only=True,
+        required=True,
+        style={'input_type':'password'}
+    )
 
     class Meta:
         model=User
         fields=['email','password']
 
+
+
+
+
 #! Serializer for Changing Password
 class UserChangePasswordSerializer(serializers.Serializer):
-    old_password=serializers.CharField(style={'input_type':'password'},write_only=True,validators=[validate_password])
-    new_password=serializers.CharField(style={'input_type':'password'},write_only=True,validators=[validate_password])
-    new_password_confirmation=serializers.CharField(style={'input_type':'password'},write_only=True,validators=[validate_password])
+    old_password=serializers.CharField(
+        style={'input_type':'password'},
+        write_only=True,
+        validators=[validate_password]
+    )
+    new_password=serializers.CharField(
+        style={'input_type':'password'},
+        write_only=True,
+        validators=[validate_password]
+    )
+    new_password_confirmation=serializers.CharField(
+        style={'input_type':'password'},
+        write_only=True,
+        validators=[validate_password]
+    )
     
 
     def validate_old_password(self,value):
@@ -114,6 +163,7 @@ class UserChangePasswordSerializer(serializers.Serializer):
             raise serializers.ValidationError(_("Current password doesn't match"))
         return value
     
+
     def validate(self, attrs):
         """
         Validate the new password and new password 
@@ -133,6 +183,9 @@ class UserChangePasswordSerializer(serializers.Serializer):
         user.save()
 
         return attrs
+
+
+
 
 #! Serializer for Sending Password Reset Email
 class SendResetPasswordEmailSerializer(serializers.Serializer):
@@ -165,10 +218,23 @@ class SendResetPasswordEmailSerializer(serializers.Serializer):
 
         return attrs
        
+
+
+
+
 #! Serializer for Resetting Password 
 class PasswordResetSerializer(serializers.Serializer):
-    password=serializers.CharField(style={'input_type':'password'},write_only=True,validators=[validate_password])
-    password_confirmation=serializers.CharField(style={'input_type':'password'},write_only=True,validators=[validate_password])
+    password=serializers.CharField(
+        style={'input_type':'password'},
+        write_only=True,
+        validators=[validate_password]
+    )
+    password_confirmation=serializers.CharField(
+        style={'input_type':'password'},
+        write_only=True,
+        validators=[validate_password]
+    )
+
 
     def validate(self, attrs):
         """
@@ -198,6 +264,24 @@ class PasswordResetSerializer(serializers.Serializer):
 
         return attrs
 
+
+class UserAccountDeleteSerializer(serializers.Serializer):
+    password=serializers.CharField(
+        style={'input_type':'password'},
+        write_only=True,
+        validators=[validate_password]
+    )
+
+
+    def validate_old_password(self,value):
+        """
+        Validate password of User before deleting
+        the users account
+        """
+        user = self.context["user"]
+        if not user.check_password(value):
+            raise serializers.ValidationError(_("Current password doesn't match"))
+        return value
 
     
 
