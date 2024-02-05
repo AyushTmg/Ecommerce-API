@@ -23,6 +23,15 @@ class User(AbstractBaseUser,PermissionsMixin):
         return f"{self.username}"
     
 
+    # ! Custom method for deleting a use account 
+    def delete_user_account(self):
+        """
+        Custom method for deleting a user account
+        completely
+        """
+        return self.delete()
+    
+
 
 
 
