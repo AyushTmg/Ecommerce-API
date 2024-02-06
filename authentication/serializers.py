@@ -273,7 +273,7 @@ class UserAccountDeleteSerializer(serializers.Serializer):
     )
 
 
-    def validate_old_password(self,value):
+    def validate_password(self,value):
         """
         Validate password of User before deleting
         the users account
