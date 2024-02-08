@@ -23,21 +23,25 @@ from .serializers import (
     OrderSerializer,
     CreateOrderSerailzer,
     UpdateOrderSerializer,
+    CancelOrderSerializer
 )
 from .filters import ProductFilter
 from .pagination import Default
 
 
 from rest_framework import permissions
+from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.generics import ListCreateAPIView
 from rest_framework.filters import OrderingFilter,SearchFilter
 from rest_framework.permissions import IsAuthenticated,IsAdminUser,AllowAny
+from rest_framework.status import HTTP_200_OK,HTTP_400_BAD_REQUEST,HTTP_403_FORBIDDEN
 
 
 from django_filters.rest_framework import DjangoFilterBackend
-
+from django.db.models import Q
+from django.shortcuts import get_object_or_404
 
 
 
@@ -391,8 +395,22 @@ class CartItemViewSet(ModelViewSet):
 
 # ! Order ViewSet
 class OrderViewSet(ModelViewSet):
-    permission_classes=[IsAuthenticated]
     pagination_class=Default
+
+    #* For Ordering  
+    filter_backends=[OrderingFilter]
+
+    #* For Specifying the fields for ordering
+    ordering_fields=['time_stamp']
+
+    def get_permissions(self):
+        """
+        Method for defing the permissions
+        """
+        if self.request.method in ['PUT', 'PATCH', 'DELETE']:
+            return [IsAdminUser()]
+        return [IsAuthenticated()]
+    
     
     def get_queryset(self):
         """
@@ -400,6 +418,7 @@ class OrderViewSet(ModelViewSet):
         all orders else only show the order of only those 
         order which belongs to the user
         """
+        # !For Admin User 
         if (self.request.user.is_staff or self.request.user.is_superuser):
             return (
                 Order.objects.all()
@@ -411,8 +430,10 @@ class OrderViewSet(ModelViewSet):
                     )
             )
         
+        # ! For a normal User
         return (
-            Order.objects.filter(user=self.request.user)
+            Order.objects.exclude(Q(payment_status="F") | Q(payment_status="C"))
+            .filter(user = self.request.user)
             .select_related('user')
             .prefetch_related(
                 'order_item',
@@ -423,6 +444,12 @@ class OrderViewSet(ModelViewSet):
         
     
     def get_serializer_class(self):
+        """
+        For using different serailizer class for 
+        differet method and actions 
+        """
+        if self.action == 'cancel_order': 
+            return CancelOrderSerializer 
         if self.request.method =='POST':
             return CreateOrderSerailzer
         elif self.request.method =='PUT':
@@ -437,6 +464,67 @@ class OrderViewSet(ModelViewSet):
         """
         user_id=self.request.user.id
         return {'user_id':user_id}
+    
+
+    # ! Custom action for viewing order history
+    @action(detail=False, methods=['GET'],permission_classes=[IsAuthenticated])
+    def history(self,request):
+        """
+        For Viewing users Order history
+        """
+        queryset=(Order.objects
+            .filter(user=request.user)
+            .select_related('user')
+            .prefetch_related(
+                'order_item',
+                'order_item__product',
+                'order_item__product__product_image'
+                )
+            )
+        serailizer=OrderSerializer(queryset,many=True)
+        return Response(serailizer.data, status=HTTP_200_OK)
+    
+
+    # ! Custom action for canceling a order
+    @action(detail=True, methods=["GET","POST"], permission_classes=[IsAuthenticated])
+    def cancel_order(self, request, pk):
+        """ 
+        Custom action for canceling a order
+        """
+        order = get_object_or_404(Order,id=pk)
+
+        # ! If the method is in GET
+        if request.method=='GET':
+
+            if order.payment_status=='F':
+                return Response(
+                    "You order has already been cancelled",
+                    status=HTTP_400_BAD_REQUEST
+                )
+            
+            elif order.payment_status=='C':
+                return Response(
+                    "Completed Orders cant be canceled",
+                    status=HTTP_403_FORBIDDEN
+                )
+
+            return Response(
+                'Are you sure ? You want to cancel your order?',
+                status=HTTP_200_OK
+            )
+        
+        # ! If the method in POST
+        if request.method == 'POST':
+            try:
+                # ! Function Called for canceling a order
+                order.cancel_order()
+                return Response("Order cancelled successfully.", status=HTTP_200_OK)
+            
+            except Exception as e:
+                return Response("Failed to cancel the order.")
+
+
+
 
 
 

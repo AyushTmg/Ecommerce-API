@@ -423,4 +423,6 @@ class UpdateOrderSerializer(serializers.ModelSerializer):
         fields=['payment_status']
 
 
-
+# ! Cancel Order Serializer
+class CancelOrderSerializer(serializers.Serializer):
+    pass
