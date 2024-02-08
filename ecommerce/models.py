@@ -67,6 +67,17 @@ class Order(models.Model):
 
     def __str__(self) -> str:
         return f"{self.user} - {self.payment_status}"
+    
+
+    def cancel_order(self):
+        """
+        Cancel the order and set status to failed
+        """
+        self.payment_status=self.FAILED
+        self.save()
+        return "Order is canceled"
+
+
 
 
 # !OrderItem Model
