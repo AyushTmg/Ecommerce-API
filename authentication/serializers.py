@@ -265,6 +265,9 @@ class PasswordResetSerializer(serializers.Serializer):
         return attrs
 
 
+
+
+# ! Serializer for deleting user account permanently
 class UserAccountDeleteSerializer(serializers.Serializer):
     password=serializers.CharField(
         style={'input_type':'password'},
