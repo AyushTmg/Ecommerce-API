@@ -2,20 +2,29 @@ from authentication.models import User
 from .serializers import UserActivitySerializer
 
 
-from rest_framework.viewsets import ModelViewSet
-from rest_framework.decorators import action
 from rest_framework.response import Response
+from rest_framework.decorators import action
+from rest_framework.status  import HTTP_200_OK 
+from rest_framework.viewsets import ModelViewSet
+from rest_framework.filters import OrderingFilter,SearchFilter
 from rest_framework.permissions import IsAdminUser,IsAuthenticated
-from rest_framework.status  import HTTP_200_OK
+
+
+from django_filters.rest_framework import DjangoFilterBackend
 
 
 
 
 # ! User Activity ViewSet 
-class UserActvityViewSet(ModelViewSet):# Create your models here.
+class UserActvityViewSet(ModelViewSet):
 
     http_method_names=['get','head','options','put','patch','delete']
     permission_classes=[IsAdminUser]
+    filter_backends=[DjangoFilterBackend,SearchFilter,OrderingFilter]
+
+    search_fields=['username','email','id']
+    ordering_fields=['username','id']
+
         
 
     def get_queryset(self):
@@ -24,7 +33,7 @@ class UserActvityViewSet(ModelViewSet):# Create your models here.
         of all the user in the database for admin user 
         """
 
-        return User.objects.filter(id=self.request.user.id).prefetch_related(
+        return User.objects.all().prefetch_related(
                 'order',
                 'order__order_item',
                 'order__order_item__product',
