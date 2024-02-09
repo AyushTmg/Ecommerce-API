@@ -21,7 +21,6 @@ def on_order(sender,**kwargs):
     # ! single supplier and the supplier email should be used in this
     data_for_sending_mail_to_suppliser={
         'user':str(kwargs['order'].user),
-        'to_email':"ayushtmg20040722@gmail.com",
         'subject':"Order Received"
     }
 
