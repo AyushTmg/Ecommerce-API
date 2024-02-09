@@ -25,8 +25,11 @@ from .serializers import (
     UpdateOrderSerializer,
     CancelOrderSerializer
 )
+
+
 from .filters import ProductFilter
 from .pagination import Default
+from .tasks import send_order_cancellation_email_task
 
 
 from rest_framework import permissions
@@ -39,9 +42,11 @@ from rest_framework.permissions import IsAuthenticated,IsAdminUser,AllowAny
 from rest_framework.status import HTTP_200_OK,HTTP_400_BAD_REQUEST,HTTP_403_FORBIDDEN
 
 
-from django_filters.rest_framework import DjangoFilterBackend
 from django.db.models import Q
+from django.db import transaction
 from django.shortcuts import get_object_or_404
+from django_filters.rest_framework import DjangoFilterBackend
+
 
 
 
@@ -328,6 +333,9 @@ class ReplyListCreateView(ListCreateAPIView):
 
 # ! Cart ViewSet
 class CartViewSet(ModelViewSet):
+    # ! Permissions for Cart ViewSet
+    permission_classes=[IsAuthenticated]
+
     queryset=(
         Cart.objects.all()
         .prefetch_related(
@@ -338,9 +346,6 @@ class CartViewSet(ModelViewSet):
         )
     serializer_class=CartSerializer
 
-    # ! Permissions for Cart ViewSet
-    permission_classes=[IsAuthenticated]
-
     
 
 
@@ -348,6 +353,7 @@ class CartViewSet(ModelViewSet):
 class CartItemViewSet(ModelViewSet):
     http_method_names=['get','head','options','post','delete','put']
     pagination_class=Default
+    
     # ! Permissions For CartItem ViewSet
     permission_classes=[IsAuthenticated]
 
@@ -481,20 +487,25 @@ class OrderViewSet(ModelViewSet):
                 'order_item__product__product_image'
                 )
             )
+        
         serailizer=OrderSerializer(queryset,many=True)
-        return Response(serailizer.data, status=HTTP_200_OK)
+
+        return Response(
+            serailizer.data,
+            status=HTTP_200_OK
+        )
     
 
-    # ! Custom action for canceling a order
-    @action(detail=True, methods=["GET","POST"], permission_classes=[IsAuthenticated])
+    # ! Custom action for cancelling a order
+    @action(detail=True, methods=["POST"], permission_classes=[IsAuthenticated])
     def cancel_order(self, request, pk):
         """ 
         Custom action for canceling a order
         """
         order = get_object_or_404(Order,id=pk)
 
-        # ! If the method is in GET
-        if request.method=='GET':
+        # ! If the method in POST
+        if request.method == 'POST':
 
             if order.payment_status=='F':
                 return Response(
@@ -507,18 +518,32 @@ class OrderViewSet(ModelViewSet):
                     "Completed Orders cant be canceled",
                     status=HTTP_403_FORBIDDEN
                 )
-
-            return Response(
-                'Are you sure ? You want to cancel your order?',
-                status=HTTP_200_OK
-            )
-        
-        # ! If the method in POST
-        if request.method == 'POST':
+            
             try:
-                # ! Function Called for canceling a order
-                order.cancel_order()
-                return Response("Order cancelled successfully.", status=HTTP_200_OK)
+                with transaction.atomic():
+                    # ! Function Called for canceling a order
+                    order.cancel_order()
+
+                    # ! Dictionary Data for User
+                    data_for_user={
+                        'user':str(order.user),
+                        'to_email':order.user.email,
+                        'subject':'Your Order Cancellation Mail'
+                    }
+
+                    # ! Dictionary Data for Supplier
+                    data_for_supplier={
+                        'user':str(order.user),
+                        'subject':'Users Order Cancellation'
+                    }
+                    
+                    # ! Calling celery task for send when order cancelled
+                    send_order_cancellation_email_task.delay(data_for_user,data_for_supplier)
+                    
+                    return Response(
+                        "Order cancelled successfully.",
+                        status=HTTP_200_OK
+                    )
             
             except Exception as e:
                 return Response("Failed to cancel the order.")
