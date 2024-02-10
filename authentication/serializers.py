@@ -70,7 +70,7 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
                 user.save()
                 uid=urlsafe_base64_encode(force_bytes(user.id))
                 token=PasswordResetTokenGenerator().make_token(user)
-                link=f'http://127.0.0.1:8000/api/activate/{uid}/{token}/'
+                link=f'http://127.0.0.1:8000/api/auth/activate/{uid}/{token}/'
                 subject="Account activation"
                 email=user.email
 
@@ -205,7 +205,7 @@ class SendResetPasswordEmailSerializer(serializers.Serializer):
 
         uid=urlsafe_base64_encode(force_bytes(user.id))
         token=PasswordResetTokenGenerator().make_token(user)
-        link=f'http://127.0.0.1:8000/api/reset-password/{uid}/{token}/'
+        link=f'http://127.0.0.1:8000/api/auth/reset-password/{uid}/{token}/'
         subject="Resetting Password"
         email=user.email
 

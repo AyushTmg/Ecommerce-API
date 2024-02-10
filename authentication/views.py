@@ -85,7 +85,7 @@ class UserLoginView(APIView):
         email=serializer.data.get('email')
         password = serializer.validated_data.get('password')
         user=authenticate(email=email,password=password)
-        
+
         if user is not  None:
             token=get_tokens_for_user(user)
             return Response(
@@ -95,7 +95,7 @@ class UserLoginView(APIView):
         
         else:
             return Response(
-                _("Invalid Credential provided"),
+                _("Invalid Credential provided or Account is not active"),
                 status=HTTP_401_UNAUTHORIZED
             )
             
@@ -114,7 +114,7 @@ class UserChangePasswordView(APIView):
         serializer.is_valid(raise_exception=True)
 
         return Response(
-            {"message":"Password changed successfully successfully"},
+            {"message":"Password changed successfully"},
             status=HTTP_200_OK
         )
 
