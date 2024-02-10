@@ -24,6 +24,7 @@ THIRD_PARTY_APPS=[
     'rest_framework',
     'rest_framework_simplejwt',
     'django_filters',
+    'corsheaders',
 ]
 
 # !INSTALLED APP'S
@@ -51,12 +52,13 @@ INTERNAL_IPS = [
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'corsheaders.middleware.CorsMiddleware',# !CORS Middleware
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    "debug_toolbar.middleware.DebugToolbarMiddleware",
+    "debug_toolbar.middleware.DebugToolbarMiddleware",# !Debug Toolbar Middleware
 ]
 
 ROOT_URLCONF = 'main.urls'
@@ -204,3 +206,19 @@ DEFAULT_FROM_EMAIL = os.environ.get('EMAIL')
 
 # ! SUPPLIER EMAIL
 SUPPLIER_EMAIL=os.environ.get('THE_SUPPLIER_EMAIL')
+
+
+# ! CORS ALLOWED ORGIN FOR ALL 
+CORS_ALLOW_ALL_ORIGINS = True
+
+
+# ! CORS ALLOWED ORIGINS FOR SPECIFIED ORIGINS
+""" 
+uncomment and add origins if you want to allows only
+some orgins to be allowed for CORS
+"""
+#* CORS_ALLOWED_ORIGINS = [
+    # ! Example origins
+    #? "http://localhost:8080",
+    #? "http://127.0.0.1:9000"
+#* ]
