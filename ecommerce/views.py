@@ -29,6 +29,7 @@ from .serializers import (
 
 from .filters import ProductFilter
 from .pagination import Default
+from .permissions import IsObjectUserOrAdminUserElseReadOnly
 from .tasks import send_order_cancellation_email_task
 
 
@@ -66,7 +67,7 @@ class CollectionViewSet(ModelViewSet):
         """
         if self.request.method in permissions.SAFE_METHODS:
             return [AllowAny()]
-        return [IsAdminUser]
+        return [IsAdminUser()]
         
     
     def retrieve(self, request, *args, **kwargs):
@@ -109,6 +110,7 @@ class ProductViewSet(ModelViewSet):
         DjangoFilterBackend,
         OrderingFilter
     ]
+    
     # * For Using the Custom filter for Product
     filterset_class=ProductFilter
 
@@ -170,10 +172,11 @@ class ProductViewSet(ModelViewSet):
 # !ProductImage ViewSet
 class ProductImageViewSet(ModelViewSet):
     serializer_class=  ProductImageSerializer
-    http_method_names=['get','head','options','post']
+    http_method_names=['get','head','options']
+
 
     # ! Permission for Product Image ViewSet
-    permission_classes=[IsAuthenticated]
+    permission_classes=[AllowAny]
     
 
     def get_queryset(self):
@@ -203,6 +206,9 @@ class ReviewViewSet(ModelViewSet):
     http_method_names=['get','head','options','post','delete']
     pagination_class=Default
 
+    # ! Custom Permission Called For Reply ViewSet
+    permission_classes=[IsObjectUserOrAdminUserElseReadOnly]
+
 
     #* For Ordering reviews   
     filter_backends=[OrderingFilter]
@@ -210,14 +216,6 @@ class ReviewViewSet(ModelViewSet):
     #* For Specifying the fields for ordering
     ordering_fields=['time_stamp']
 
-
-    def get_permissions(self):
-        """
-        Permission for Review ViewSet
-        """
-        if self.request.method in permissions.SAFE_METHODS:
-            return [AllowAny()]
-        return [IsAdminUser]
 
 
     def get_queryset(self):
@@ -254,23 +252,20 @@ class ReviewViewSet(ModelViewSet):
 
 
 # ! Reply View 
-class ReplyListCreateView(ListCreateAPIView):
+class ReplyViewSet(ModelViewSet):
+    http_method_names=['get','head','options','post','delete']
     serializer_class=ReplySerializer
     pagination_class=Default
+
+
     #* For Ordering reviews reply 
     filter_backends=[OrderingFilter]
 
     #* For Specifying the fields for ordering
     ordering_fields=['time_stamp']
 
-
-    def get_permissions(self):
-        """
-        Permission for Review ViewSet
-        """
-        if self.request.method in permissions.SAFE_METHODS:
-            return [AllowAny()]
-        return [IsAdminUser]    
+    # !Custom Permission Called for Reply ViewSet 
+    permission_classes=[IsObjectUserOrAdminUserElseReadOnly]
 
 
     def get_queryset(self):
@@ -309,17 +304,10 @@ class ReplyListCreateView(ListCreateAPIView):
         Over Riding the list  method to add
         corresponding review to it's replies
         """
-
-        queryset = self.filter_queryset(self.get_queryset())
-        page = self.paginate_queryset(queryset)
-
-        if page is not None:
-            serializer = self.get_serializer(page, many=True)
-            return self.get_paginated_response(serializer.data)
         
         review=Review.objects.get(id=self.kwargs['review_pk'])
         review_serailizer=ReviewSerailizer(review)
-        serializer = self.get_serializer(queryset, many=True)
+        serializer = self.get_serializer(self.get_queryset(), many=True)
 
         data={
             'review':review_serailizer.data,

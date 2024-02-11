@@ -35,7 +35,7 @@ class CollectionSerializer(ModelSerializer):
 class ProductImageSerializer(ModelSerializer):
     class Meta:
         model=ProductImage
-        fields=['image']
+        fields=['id','image']
     
     def create(self, validated_data):
         """
@@ -263,7 +263,7 @@ class AddCartItemSerializer(ModelSerializer):
 class UpdateCartItemSerializer(ModelSerializer):
     class Meta:
         model=CartItem
-        fields=['quantity']
+        fields=['id','quantity']
 
 
 

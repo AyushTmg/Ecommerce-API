@@ -3,7 +3,7 @@ from .views import (
     ProductViewSet,
     ProductImageViewSet,
     ReviewViewSet,
-    ReplyListCreateView,
+    ReplyViewSet,
     CartViewSet,
     CartItemViewSet,
     OrderViewSet
@@ -24,12 +24,17 @@ product_router=routers.NestedDefaultRouter(router,'products',lookup='product')
 product_router.register('images',ProductImageViewSet,basename='product_image')
 product_router.register('reviews',ReviewViewSet,basename='product_review')
 
+
+review_router=routers.NestedDefaultRouter(product_router,'reviews',lookup='review')
+review_router.register('replies',ReplyViewSet,basename="review_reply")
+
+
 cart_router=routers.NestedDefaultRouter(router,'cart',lookup='cart')
 cart_router.register('items',CartItemViewSet,basename='cart_items')
 
-urlpatterns = router.urls+product_router.urls+cart_router.urls
 
-urlpatterns+=[
-    path('products/<str:product_pk>/reviews/<str:review_pk>/replies/', ReplyListCreateView.as_view(), name='review_reply'),
-]
+urlpatterns = router.urls+product_router.urls+cart_router.urls+review_router.urls
+
+
+
 
