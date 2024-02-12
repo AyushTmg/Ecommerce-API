@@ -37,10 +37,15 @@ from rest_framework import permissions
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
-from rest_framework.generics import ListCreateAPIView
 from rest_framework.filters import OrderingFilter,SearchFilter
 from rest_framework.permissions import IsAuthenticated,IsAdminUser,AllowAny
-from rest_framework.status import HTTP_200_OK,HTTP_400_BAD_REQUEST,HTTP_403_FORBIDDEN
+
+from rest_framework.status import(
+    HTTP_200_OK,
+    HTTP_400_BAD_REQUEST,
+    HTTP_403_FORBIDDEN,
+    HTTP_404_NOT_FOUND
+)
 
 
 from django.db.models import Q
@@ -126,8 +131,6 @@ class ProductViewSet(ModelViewSet):
         if self.request.method in permissions.SAFE_METHODS:
             return [AllowAny()]
         return [IsAdminUser()]
-    
-
     
 
     def get_serializer_context(self):
@@ -321,18 +324,36 @@ class ReplyViewSet(ModelViewSet):
 
 # ! Cart ViewSet
 class CartViewSet(ModelViewSet):
+    http_method_names=['get','head','options']
+    
     # ! Permissions for Cart ViewSet
     permission_classes=[IsAuthenticated]
+    serializer_class=CartSerializer
 
-    queryset=(
-        Cart.objects.all()
+    
+
+    def get_queryset(self):
+        """
+        Over Riding the queryset to filter cart
+        by authenticated users 
+        """
+        return (
+        Cart.objects.filter(user=self.request.user)
         .prefetch_related(
             'cart_item',
             'cart_item__product',
             'cart_item__product__product_image'
             )
         )
-    serializer_class=CartSerializer
+    
+
+    def get_serializer_context(self):
+        """
+        Passing user_id to serailizer
+        """
+        user_id=self.request.user.id
+        return{'user_id':user_id}
+    
 
     
 
@@ -446,7 +467,7 @@ class OrderViewSet(ModelViewSet):
             return CancelOrderSerializer 
         if self.request.method =='POST':
             return CreateOrderSerailzer
-        elif self.request.method =='PUT':
+        elif self.request.method in ['PUT','PATCH']:
             return UpdateOrderSerializer
         return OrderSerializer
     
@@ -459,7 +480,7 @@ class OrderViewSet(ModelViewSet):
         user_id=self.request.user.id
         return {'user_id':user_id}
     
-
+    
     # ! Custom action for viewing order history
     @action(detail=False, methods=['GET'],permission_classes=[IsAuthenticated])
     def history(self,request):

@@ -119,6 +119,7 @@ class ReviewSerailizer(ModelSerializer):
             Review.objects.create(
                 user_id=user_id,
                 product_id=product_id,
+                **validated_data
                 )
             )
 
@@ -247,7 +248,6 @@ class AddCartItemSerializer(ModelSerializer):
             cart_item=CartItem.objects.get(cart_id=cart_id,product_id=product_id)
             cart_item.quantity+=quantity
             cart_item.save()
-            cart_item
     
         except Exception as e:
             # ! If there is no such cart item for this product new cart item is created
@@ -299,6 +299,12 @@ class CartSerializer(ModelSerializer):
 
         ]
 
+    def create(self, validated_data):
+        user_id=self.context['user_id']
+        return Cart.objects.create(
+            user_id=user_id
+        )
+
 
 
 
@@ -328,33 +334,32 @@ class OrderItemSerailizer(ModelSerializer):
 
 # ! Create Order Serailizer 
 class CreateOrderSerailzer(serializers.Serializer):
-    cart_id=serializers.IntegerField()
     
-    def validate_cart_id(self,value):
+    def validate(self,attrs):
         """
         Method for validating cart id 
         """
         user_id=self.context['user_id']
-        if  not Cart.objects.filter(id=value,user_id=user_id).exists():
+        cart=Cart.objects.get(user_id=user_id)
+        if  not cart:
             raise ValidationError("Cart with given cart id user_id  doesnt exists")
         
-        if CartItem.objects.filter(cart_id=value).count() == 0:
+        if CartItem.objects.filter(cart=cart).count() == 0:
             raise serializers.ValidationError('The cart is empty.')
         
-        return value
+        return attrs
 
 
     def save(self, **kwargs):
         """
-        Method which get the cart by cart id and orders 
-        all the cart item in the cart 
+        Method which get the user cart and 
+        orders all the cart item in the cart 
         """
         with transaction.atomic():
-            cart_id=self.validated_data['cart_id']
             user_id=self.context['user_id']
             
             #! Get the cart object from db using validated data
-            cart=Cart.objects.get(id=cart_id,user_id=user_id)
+            cart=Cart.objects.get(user_id=user_id)
 
             # ! Create new order with the user_id
             order=Order.objects.create(user_id=user_id)
@@ -375,6 +380,9 @@ class CreateOrderSerailzer(serializers.Serializer):
 
             # ! Deleteing a cart after the order adn order item is created
             cart.delete()
+
+            # ! Creating another cart for the same user after deleting the ordered cart
+            Cart.objects.create(user_id=user_id)
 
             #  ! Custome signal fired 
             order_created.send_robust(self.__class__,order=order)
@@ -406,6 +414,7 @@ class  OrderSerializer(ModelSerializer):
     class Meta:
         model=Order
         fields=[
+            'id',
             'user',
             'payment_status',
             'order_item',
@@ -421,6 +430,8 @@ class UpdateOrderSerializer(serializers.ModelSerializer):
     class Meta :
         model=Order
         fields=['payment_status']
+
+
 
 
 # ! Cancel Order Serializer
