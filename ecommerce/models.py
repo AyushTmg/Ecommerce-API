@@ -104,7 +104,7 @@ class CartItem(models.Model):
         validators=[MinValueValidator(1)]
         )
     cart=models.ForeignKey(Cart,on_delete=models.CASCADE,related_name='cart_item')
-    product=models.OneToOneField(Product,on_delete=models.CASCADE,related_name='cart_item')
+    product=models.ForeignKey(Product,on_delete=models.CASCADE,related_name='cart_item')
 
 
     class Meta:
