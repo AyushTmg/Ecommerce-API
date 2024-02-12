@@ -36,6 +36,7 @@ from .tasks import send_order_cancellation_email_task
 from rest_framework import permissions
 from rest_framework.decorators import action
 from rest_framework.response import Response
+from rest_framework.exceptions import NotFound
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.filters import OrderingFilter,SearchFilter
 from rest_framework.permissions import IsAuthenticated,IsAdminUser,AllowAny
@@ -371,14 +372,21 @@ class CartItemViewSet(ModelViewSet):
         """
         Over Riding the queryset for filtering the cart
         item by cart_id presented at URL parameter and 
-        also using select_related and prefetch_related
+        user_id also using select_related and prefetch_related
         for optimization
         """
         cart_id=self.kwargs['cart_pk']
+        user=self.request.user
+
+        try:
+           cart=Cart.objects.get(id=cart_id,user=user)
+        except Exception as e:
+            raise NotFound('Not found')
+
 
         return (
             CartItem.objects
-            .filter(cart_id=cart_id)
+            .filter(cart=cart)
             .select_related('product')
             .prefetch_related('product__product_image')
         )
@@ -403,7 +411,8 @@ class CartItemViewSet(ModelViewSet):
         Passing the cart Id to the serializer 
         """
         cart_id=self.kwargs['cart_pk']
-        return {'cart_id':cart_id}
+        user_id=self.request.user.id
+        return {'cart_id':cart_id,'user_id':user_id}
     
 
 

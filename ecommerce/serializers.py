@@ -232,15 +232,16 @@ class AddCartItemSerializer(ModelSerializer):
         Over riding the save method to create 
         a new cart item instance or to update it  
         """
-
         cart_id=self.context['cart_id']
+        user_id=self.context['user_id']
         product_id = self.validated_data['product_id']
         quantity = self.validated_data['quantity']
+
         
         # ! Check if cart with the cart_id exists or not 
-        cart=Cart.objects.filter(id=cart_id).exists()
+        cart=Cart.objects.filter(id=cart_id,user_id=user_id).exists()
         if not cart:
-            raise  ValidationError('No Such Cart with the given cart_id exists')
+            raise  ValidationError('No Such Cart with the given cart_id and User exists')
 
         # ! Expection is handeled here 
         try:
