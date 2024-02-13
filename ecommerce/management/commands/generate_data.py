@@ -4,7 +4,7 @@
 # !Note : The following functions are used for testing and development phase!
 
 from django.core.management.base import BaseCommand
-from ...utils import (
+from ...dummy import (
     generate_dummy_collection,
     generate_dummy_user,
     generate_dummy_product,
