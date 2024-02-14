@@ -20,15 +20,49 @@ def api_client():
     return APIClient()
 
 
+
 @pytest.fixture
-def user_authenticate_fixture(api_client):
+def normal_user_authenticate_fixture(api_client):
     """
-    Fixture to authenticate a user and make it 
-    available globally.
+    Fixture to authenticate a user as normal user
+    and make it available globally.
     """
-    def authenticate(is_staff=False):
+    def authenticate():
         user_model = get_user_model()
-        user = user_model.objects.create_user(username='test_user', email='test@example.com', password='password',is_staff=is_staff)
+
+        #!  Create Normal User
+        user = user_model.objects.create_user(
+            first_name="testname",
+            last_name="testname",
+            username='test_user',
+            email='test@example.com',
+            password='password'
+        )
+
+        return api_client.force_authenticate(user=user)
+    
+    return authenticate
+
+
+@pytest.fixture
+def admin_user_authenticate_fixture(api_client):
+    """
+    Fixture to authenticate a user as admin and 
+    make it available globally.
+    """
+    def authenticate():
+        user_model = get_user_model()
+
+        # ! Create and authenticate admin user
+        user = user_model.objects.create_user(
+            first_name="testname",
+            last_name="testname",
+            username='user_admin',
+            email='test_admin@example.com',
+            password='password',
+            is_staff=True
+        )
+
         return api_client.force_authenticate(user=user)
     
     return authenticate
