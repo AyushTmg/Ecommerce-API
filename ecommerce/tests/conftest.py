@@ -108,3 +108,22 @@ def delete_method_fixture(api_client):
         return api_client.delete(f"{url}{id}/")
     
     return make_request
+
+
+
+
+@pytest.fixture
+def patch_method_fixture(api_client):
+    """
+    Fixture for PATCH method for a specific
+    object 
+    """
+    def make_request(url,id,val):
+        return api_client.patch(f"{url}{id}/",val)
+    
+    return make_request
+    
+
+
+
+    

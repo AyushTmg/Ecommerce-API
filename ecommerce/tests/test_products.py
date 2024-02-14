@@ -48,6 +48,7 @@ class TestProductForAnynomousUser:
                 "title": "Product",
                 "description": "Product Descriptions",
                 "price": 11,
+                #! If anynomous users could actually add a product then  this should be an existing collection id
                 "collection": 1
             }
         )
@@ -71,13 +72,37 @@ class TestProductForAnynomousUser:
         assert response.status_code == HTTP_401_UNAUTHORIZED
 
 
+    def test_if_user_is_anynomous_for_patch_method_return_401(
+            self,
+            patch_method_fixture, #Fixture
+        ):
+        """
+        Test Method for returning 401 unauthorized if user is a
+        anynomous and tries to perform  a patch request on product
+        """
+       
+        product_id=99
+        product_data={
+            'title':"For this we dont need to pass exact data"
+        }
+ 
+        # ! Fixture for using patch method is called
+        response=patch_method_fixture("/api/e-commerce/products/",product_id,product_data)
+
+        assert response.status_code == HTTP_401_UNAUTHORIZED
+
+
+    
+
+
+
 
 
 # ! Tesing Product API for Normal Users
 @pytest.mark.django_db
 class TestProductForNormalUser:
     
-    def test_if_user_is_authenticated_for_get_method_returns_200(
+    def test_if_user_is_normal_user_for_get_method_returns_200(
             self,
             get_method_fixture, #Fixture
             normal_user_authenticate_fixture #Fixture
@@ -96,8 +121,8 @@ class TestProductForNormalUser:
 
         assert response.status_code == HTTP_200_OK
 
-    
-    def test_if_user_is_authenticated_for_post_request_returns_401(
+
+    def test_if_user_is_normal_user_for_post_request_returns_401(
             self,
             post_method_fixture, #Fixture
             normal_user_authenticate_fixture, #Fixture
@@ -109,7 +134,6 @@ class TestProductForNormalUser:
 
         # ! Fixture for authenticating user as normal user is called 
         normal_user_authenticate_fixture()
-        collection = post_method_fixture("/api/e-commerce/collections/",{"title":'a'})
 
 
         # !Fixture for post method is called 
@@ -119,14 +143,15 @@ class TestProductForNormalUser:
                 "title": "Product",
                 "description": "Product Descriptions",
                 "price": 11,
-                "collection": 1
+                #! If authenticated users could actually add a product then  this should be an existing collection id
+                "collection": 1 
             }
         )
 
         assert response.status_code == HTTP_403_FORBIDDEN
 
 
-    def test_if_user_is_authenticated_for_delete_request_return_403(
+    def test_if_user_is_normal_user_for_delete_request_return_403(
             self,
             delete_method_fixture, #Fixture
             normal_user_authenticate_fixture#Fixture
@@ -144,10 +169,32 @@ class TestProductForNormalUser:
         response=delete_method_fixture("/api/e-commerce/products/",99)
 
         assert response.status_code == HTTP_403_FORBIDDEN
-    
 
 
+    def test_if_user_is_normal_user_for_patch_method_return_403(
+            self,
+            patch_method_fixture, #Fixture
+            normal_user_authenticate_fixture #Fixture
+        ): 
+        """
+        Test method for return status 403 Forbidden if a normal user tries 
+        to use patch method for updating
+        """
 
+        # ! Fixture for authenticating user as normal user is called 
+        normal_user_authenticate_fixture()
+
+        product_id=99
+        product_data={
+            'title':"For this we dont need to pass exact data"
+        }
+ 
+        # ! Fixture for using patch method is called
+        response=patch_method_fixture("/api/e-commerce/products/",product_id,product_data)
+
+        assert response.status_code == HTTP_403_FORBIDDEN
+
+        
 
 
 # ! Tesing Product API for Admin Users
@@ -207,8 +254,7 @@ class TestProductForAdminUser:
         assert 'price' in response.data and isinstance(response.data['price'], int)
         assert 'collection' in response.data and response.data['collection'] is not None
         assert response.data['id']>0
-
-        
+      
 
     def test_if_user_is_admin_for_delete_request_return_404(
                 self,
@@ -227,3 +273,58 @@ class TestProductForAdminUser:
             response=delete_method_fixture("/api/e-commerce/products/",99)
 
             assert response.status_code == HTTP_404_NOT_FOUND
+
+
+    def test_if_user_is_admin_for_patch_method_return_200(
+            self,
+            patch_method_fixture, #Fixture
+            post_method_fixture, #Fixture
+            admin_user_authenticate_fixture #Fixture
+        ):
+        """ 
+        Test Method for returning 200 OK response when a
+        successful update is done
+        """
+ 
+        # ! Fixture for authentication user as admin is called
+        admin_user_authenticate_fixture()
+ 
+        # ! Here we have created a collection using post request
+        collection_response = post_method_fixture("/api/e-commerce/collections/", {"title": 'a'})
+        collection_id = collection_response.data['id']
+
+        # ! Here we have created a product using post request and  added it to the collection
+        product_response = post_method_fixture(
+            "/api/e-commerce/products/",
+            {
+                "title": "33",
+                "description": "33",
+                "price": 99,
+                "collection": collection_id 
+            }
+        )
+        product_id = product_response.data['id']
+
+        # ! Dictionary for Updaing the product fields
+        updated_product_data = {
+            "title": "Updated Title",
+            "description": "Updated Description",
+            "price": 199,
+            "collection": collection_id
+        }
+ 
+        # ! Fixture for patch method is called to user patch method
+        # ! on the created product in the created collection 
+        response = patch_method_fixture("/api/e-commerce/products/", product_id, updated_product_data)
+
+        # ! Multiple assertion for handeling exceptions 
+        assert response.status_code == HTTP_200_OK
+        assert 'title' in response.data and response.data['title'] is not None
+        assert 'description' in response.data and response.data['description'] is not None
+        assert 'price' in response.data and isinstance(response.data['price'], int)
+        assert 'collection' in response.data and response.data['collection'] is not None
+        assert response.data['id']>0
+
+
+
+
