@@ -2,11 +2,11 @@ import pytest
 
 from rest_framework.status import (
     HTTP_200_OK,
-    HTTP_401_UNAUTHORIZED,
-    HTTP_403_FORBIDDEN,
     HTTP_201_CREATED,
-    HTTP_404_NOT_FOUND
-
+    HTTP_404_NOT_FOUND,
+    HTTP_403_FORBIDDEN,
+    HTTP_400_BAD_REQUEST,
+    HTTP_401_UNAUTHORIZED,
 )
 
 
@@ -93,10 +93,6 @@ class TestProductForAnynomousUser:
 
 
     
-
-
-
-
 
 # ! Tesing Product API for Normal Users
 @pytest.mark.django_db
@@ -241,7 +237,7 @@ class TestProductForAdminUser:
             "/api/e-commerce/products/",
             {
                 "title": "33",
-                "description": "33",
+                "description": "ss",
                 "price": 99,
                 "collection": collection.data['id'] #! Using id of created collection
             }
@@ -325,6 +321,108 @@ class TestProductForAdminUser:
         assert 'collection' in response.data and response.data['collection'] is not None
         assert response.data['id']>0
 
+
+    # ! Used to test against multiple sets of inputs
+    @pytest.mark.parametrize("invalid_data", [
+        {
+            "title": "Invalid Title 1",
+            "description": "De",
+            "price": 9.00090909,
+            "collection": 9  
+        },
+        {
+            "title": "Invalid Title 2",
+            "description": "ghj",
+            "price": "",
+            "collection": 9
+        },
+        {
+            "title": "Invalid Title 3",
+            "description": "Description for 35",
+            "price": 0.00,
+            "collection": 9
+        },
+
+    ])
+    def test_if_user_is_admin_for_post_method_using_invalid_data_return_400(
+            self,
+            admin_user_authenticate_fixture,
+            post_method_fixture,
+            invalid_data
+        ):
+        """
+        Test Case which return 400 Bad Request status when invalid
+        data's are sent for a post request
+        """
+
+        # ! Authentication of the admin user using fixtures
+        admin_user_authenticate_fixture()
+
+        # ! Using Post fixture with invalid data's
+        response=post_method_fixture('/api/e-commerce/products/', invalid_data)
+        
+        assert response.status_code == HTTP_400_BAD_REQUEST
+
+
+    # ! Used to test against multiple sets of inputs
+    @pytest.mark.parametrize("invalid_data", [
+        {
+            "title": "Invalid Title 1",
+            "description": "De",
+            "price": 9.00090909,
+            "collection": 9  
+        },
+        {
+            "title": "Invalid Title 2",
+            "description": "ghj",
+            "price": "",
+            "collection": 9
+        },
+        {
+            "title": "Invalid Title 3",
+            "description": "Description for 35",
+            "price": 0.00,
+            "collection": 9
+        },
+
+    ])
+    def test_if_user_is_admin_for_patch_method_using_invalid_data_return_400(
+        self,
+        invalid_data,
+        post_method_fixture,
+        patch_method_fixture,
+        admin_user_authenticate_fixture
+        ):
+        """
+        Test Case which return 400 Bad Request status when invalid
+        data's are sent for a patch request
+        """
+
+        # ! Authentication of the admin user using fixtures
+        admin_user_authenticate_fixture()
+
+        # ! Here we have created a collection using post request
+        collection_response = post_method_fixture("/api/e-commerce/collections/", {"title": 'a'})
+        collection_id = collection_response.data['id']
+        
+        # ! Here we have created a product using post request and  added it to the collection
+        product_response = post_method_fixture(
+            "/api/e-commerce/products/",
+            {
+                "title": "33",
+                "description": "33",
+                "price": 99,
+                "collection": collection_id 
+            }
+        )
+        product_id = product_response.data['id']
+        
+        # ! Using Patch fixture with invalid data's
+        response=patch_method_fixture('/api/e-commerce/products/',product_id,invalid_data)
+
+        assert response.status_code == HTTP_400_BAD_REQUEST
+        
+        
 
 
 
