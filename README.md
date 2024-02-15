@@ -102,3 +102,24 @@ https://documenter.getpostman.com/view/30946823/2sA2r535Mj
 
 
 
+
+## For Running Test
+
+### Running Tests
+
+To run tests, use the following command in the terminal:
+
+        pytest
+
+
+### Continuous Testing
+
+For continuous testing to update code and test simultaneously, use:
+
+
+
+        ptw
+
+## Contribution
+
+Contributions are welcomed ! If you're interested in helping to improve this project, please feel free to fork the repository, make your changes, and submit a pull request. Any contributions, whether big or small, are greatly appreciated!
