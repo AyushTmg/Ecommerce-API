@@ -35,8 +35,8 @@ class TestProductReviewForAnynomousUser:
             post_method_fixture, #Fixture
         ):
         """
-        Test Method which returns 200 OK response 
-        when a normal user perform GET method
+        Test Method which returns 401 Unauthorized status
+        when a anynomous user perform POST method
         """
 
         data={
@@ -54,8 +54,8 @@ class TestProductReviewForAnynomousUser:
             delete_method_fixture, #Fixture
         ):
         """
-        Test for returning 404 Not Found Response if when a 
-        anynomous user perform delete method on reviews endpoint
+        Test for returning 401 status if when a anynomous
+        user perform delete method on reviews endpoint
         """
 
         # ! Fixture for delete method is called 
@@ -98,7 +98,7 @@ class TestProductReviewForNormalUser:
             normal_user_authenticate_fixture, #Fixture
         ):
         """
-        Test Method which returns 200 OK response 
+        Test Method which returns 201 Created status 
         when a normal user perform GET method
         """
 
@@ -143,7 +143,7 @@ class TestProductReviewForNormalUser:
             normal_user_authenticate_fixture #Fixture
         ):
         """
-        Test for returning 404 Not Found Response if when a 
+        Test for returning 404 Not Found Status if when a 
         authenticated user perform delete method on reviews endpoint
         """
 
@@ -164,7 +164,8 @@ class TestProductReviewForNormalUser:
             normal_user_authenticate_fixture, #Fixture
         ):
         """
-        Test for returning 403 if  an authenticated user tries to delete another users's review
+        Test for returning 403 if  an authenticated user tries 
+        to delete another users's review
         """
 
         # ! For Authenticating user as admin 
