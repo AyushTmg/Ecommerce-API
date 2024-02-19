@@ -39,6 +39,7 @@ from rest_framework.response import Response
 from rest_framework.exceptions import NotFound
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.filters import OrderingFilter,SearchFilter
+from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.permissions import IsAuthenticated,IsAdminUser,AllowAny
 
 from rest_framework.status import(
@@ -108,6 +109,7 @@ class ProductViewSet(ModelViewSet):
     serializer_class=ProductSerailizer
     http_method_names=['get','head','options','post','delete','patch']
     pagination_class=Default
+    parser_classes = [MultiPartParser, FormParser]
 
    
     #* For Searching,Filtering and Ordering products
@@ -168,7 +170,7 @@ class ProductViewSet(ModelViewSet):
             'similar_products': related_serializer.data
         }
 
-        return Response(data)
+        return Response(data,status=HTTP_200_OK)
 
 
 
@@ -408,7 +410,8 @@ class CartItemViewSet(ModelViewSet):
 
     def get_serializer_context(self):
         """
-        Passing the cart Id to the serializer 
+        Passing the cart Id and user_id to
+        the serializer 
         """
         cart_id=self.kwargs['cart_pk']
         user_id=self.request.user.id

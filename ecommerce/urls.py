@@ -17,7 +17,7 @@ from rest_framework_nested import routers
 router=routers.DefaultRouter()
 router.register('collections',CollectionViewSet)
 router.register('products',ProductViewSet)
-router.register('cart',CartViewSet)
+router.register('cart',CartViewSet,basename='cart')
 router.register('order',OrderViewSet,basename='order')
 
 product_router=routers.NestedDefaultRouter(router,'products',lookup='product')
